@@ -5,6 +5,8 @@ require 'faraday_middleware/aws_signers_v4'
 
 AWS_REGION = 'us-east-1'
 API_ID     = '9ucus3fwwj'
+WS_URL     = "wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com"
+#    wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com
 
 get '/' do
   'websocket_toy says OK, but without using an actual websocket'
