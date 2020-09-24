@@ -1,18 +1,34 @@
 require 'sinatra'
+require 'aws-sdk-apigateway'
+require 'faraday_middleware'
+require 'faraday_middleware/aws_signers_v4'
 
 AWS_REGION = 'us-east-1'
+API_ID     = '9ucus3fwwj'
 
 get '/' do
-  'OK'
+  'websocket_toy says OK, but without using an actual websocket'
 end
 
 get '/aws_websocket_replies' do
-  # When the "credentials: foo" config is omitted, the AWS gem looks in ~/.aws/credentials
-  client = Aws::ApiGatewayV2::Client.new(region: AWS_REGION)
-  'not yet'
+    # {"credentials: foo"} config is omitted, so AWS gem looks in ~/.aws/credentials
+  client = Aws::APIGateway::Client.new(region: AWS_REGION)
+  app_url = 'https://console.aws.amazon.com/cloud9/ide/066180cd4f524733bb998679cfa1e14a'
+  ws_url  = "wss://#{API_ID}.execute-api.#{AWS_REGION}.amazonaws.com"
+  conn = Faraday.new(url: ws_url) do |cfg|
+           cfg.request :aws_signers_v4,  credentials: creds,
+                       service_name: 'execute-api',  region: AWS_REGION
+           cfg.response :json, :content_type => /\bjson\b/
+           cfg.response :raise_error
+           cfg.adapter Faraday.default_adapter
+         end
+  resp = conn.get '/test'
+  #'Not yet implemented, but at least the method does not fail'
+  "resp --> #{resp.inspect}"
 end
 
 
+=begin
 class AwsGateway
   def connection
     Faraday.new(url: @url) do |cfg|
@@ -29,4 +45,4 @@ class AwsGateway
       cfg.adapter Faraday.default_adapter
     end
   end
-end
+=end
