@@ -24,8 +24,7 @@ get '/aws_websocket_replies' do
            cfg.response :raise_error
            cfg.adapter Faraday.default_adapter
          end
-  resp = conn.get '/test'
-  #'Not yet implemented, but at least the method does not fail'
+  resp = conn.get '/test' || 'No response, but no errors either'
   "resp --> #{resp.inspect}"
 end
 
