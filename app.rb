@@ -8,6 +8,9 @@ API_ID     = '9ucus3fwwj'
 WS_URL     = "wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com"
 #    wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com
 
+ENV['AWS_ACCESS_KEY_ID']    || (puts('No env var AWS_ACCESS_KEY_ID'); exit)
+ENV['AWS_SECRET_ACCESS_KEY'] || (puts('No env var AWS_SECRET_ACCESS_KEY'); exit)
+
 get '/' do
   'websocket_toy says OK, but without using an actual websocket'
 end
@@ -22,7 +25,7 @@ get '/aws_websocket_replies' do
                        service: 'apigateway',
                        region:   AWS_REGION,
                        access_key_id:     ENV['AWS_ACCESS_KEY_ID'],
-                       secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],
+                       secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
            cfg.response :json, :content_type => /\bjson\b/
            cfg.response :raise_error
            cfg.adapter Faraday.default_adapter
