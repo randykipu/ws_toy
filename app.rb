@@ -1,7 +1,7 @@
 require 'sinatra'
 require 'aws-sdk-apigateway'
 require 'faraday_middleware'
-require 'faraday_middleware/aws_signers_v4'
+require 'faraday_middleware/aws_sigv4'
 
 AWS_REGION = 'us-east-1'
 API_ID     = '9ucus3fwwj'
@@ -18,8 +18,11 @@ get '/aws_websocket_replies' do
   app_url = 'https://console.aws.amazon.com/cloud9/ide/066180cd4f524733bb998679cfa1e14a'
   ws_url  = "wss://#{API_ID}.execute-api.#{AWS_REGION}.amazonaws.com"
   conn = Faraday.new(url: ws_url) do |cfg|
-           cfg.request :aws_signers_v4,  credentials: creds,
-                       service_name: 'execute-api',  region: AWS_REGION
+           cfg.request :aws_sigv4,
+                       service: 'apigateway',
+                       region:   AWS_REGION,
+                       access_key_id:     ENV['AWS_ACCESS_KEY_ID'],
+                       secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],
            cfg.response :json, :content_type => /\bjson\b/
            cfg.response :raise_error
            cfg.adapter Faraday.default_adapter
