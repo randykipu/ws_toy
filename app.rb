@@ -34,7 +34,7 @@ def log_randy
   puts "#{'---'*9}"
 end
 
-get '/' do
+get '/speak' do
   hit_count += 1
   log_randy
   if !request.websocket?
@@ -73,7 +73,7 @@ end
 #end
 =end
 
-get '/ok' do
+get '/rjp' do
   hit_count += 1
   log_randy
   ip = request.ip
