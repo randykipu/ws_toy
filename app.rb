@@ -14,7 +14,7 @@ hit_count  = 0
 ENV['AWS_ACCESS_KEY_ID']     || (puts('No env var AWS_ACCESS_KEY_ID'); exit)
 ENV['AWS_SECRET_ACCESS_KEY'] || (puts('No env var AWS_SECRET_ACCESS_KEY'); exit)
 
-set :bind, 0.0.0.0
+set :bind, '0.0.0.0'
 set :port, 8081
 set :sockets, []
 puts "\nServer listening on '/' for connection to:"
@@ -65,7 +65,7 @@ end
 
 get '/ok' do
   hit_count += 1
-  'websocket_toy says OK to hit # #{hit_count}, but without using an actual websocket'
+  "websocket_toy says OK to hit # #{hit_count}, but without using an actual websocket"
 end
 
 
