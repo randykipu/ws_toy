@@ -3,6 +3,7 @@ require 'sinatra-websocket'
 require 'aws-sdk-apigateway'
 require 'faraday_middleware'
 require 'faraday_middleware/aws_sigv4'
+require 'amazing_print'
 
 AWS_REGION = 'us-east-1'
 API_ID     = '9ucus3fwwj'
@@ -13,6 +14,7 @@ hit_count  = 0
 
 ENV['AWS_ACCESS_KEY_ID']     || (puts('No env var AWS_ACCESS_KEY_ID'); exit)
 ENV['AWS_SECRET_ACCESS_KEY'] || (puts('No env var AWS_SECRET_ACCESS_KEY'); exit)
+RANDYS_IP = '136.55.5.229'
 
 set :bind, '0.0.0.0'
 set :port, 8081
@@ -23,15 +25,23 @@ puts "...using websocket:"
 puts ws_url
 puts '...'
 
+def log_randy
+  ip = request.ip
+  return unless (ip == RANDYS_IP) || (ip == '127.0.0.1')
+
+  puts "#{'---'*9}"
+  ap request.env, options = {}
+  puts "#{'---'*9}"
+end
 
 get '/' do
+  hit_count += 1
+  log_randy
   if !request.websocket?
-    hit_count += 1
     "ws_toy is replying to a non-websocket request to '/', hit # #{hit_count}"
   else
     request.websocket do |ws|
       ws.onopen do
-        hit_count += 1
         ws.send "ws_toy says Hi, because it recognized a websocket request, hit # #{hit_count}"
         settings.socket << ws
       end
@@ -65,7 +75,9 @@ end
 
 get '/ok' do
   hit_count += 1
-  "websocket_toy says OK to hit # #{hit_count}, but without using an actual websocket"
+  log_randy
+  ip = request.ip
+  "websocket_toy says OK to hit # #{hit_count} from #{ip}, but without using an actual websocket"
 end
 
 
