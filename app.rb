@@ -1,37 +1,66 @@
 require 'sinatra'
+require 'sinatra-websocket'
 require 'aws-sdk-apigateway'
 require 'faraday_middleware'
 require 'faraday_middleware/aws_sigv4'
 
 AWS_REGION = 'us-east-1'
 API_ID     = '9ucus3fwwj'
-WS_URL     = "wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com"
-#    wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com
+ws_url     = "wss://#{API_ID}.execute-api.#{AWS_REGION}.amazonaws.com/test"
+#             wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com/test
+app_url    = 'https://console.aws.amazon.com/cloud9/ide/066180cd4f524733bb998679cfa1e14a'
 
-ENV['AWS_ACCESS_KEY_ID']    || (puts('No env var AWS_ACCESS_KEY_ID'); exit)
+ENV['AWS_ACCESS_KEY_ID']     || (puts('No env var AWS_ACCESS_KEY_ID'); exit)
 ENV['AWS_SECRET_ACCESS_KEY'] || (puts('No env var AWS_SECRET_ACCESS_KEY'); exit)
 
+set :port, 8080
+set :sockets, []
+puts "\nServer listening on '/' for connection to:"
+puts app_url
+puts "...using websocket:"
+puts ws_url
+puts '...'
+
+
 get '/' do
-  'websocket_toy says OK, but without using an actual websocket'
+  if !request.websocket?
+    'ws_toy is replying to a non-websocket request to /'
+  else
+    request.websocket do |ws|
+      ws.onopen do
+        ws.send "ws_toy says Hi, because it recognized a websocket request"
+        settings.socket << ws
+      end
+      ws.onmessage do |msg|
+        EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+      end
+      ws.onclose do
+        warn("websocket closed")
+        settings.sockets.delete ws
+      end
+    end
+  end
 end
 
-get '/aws_websocket_replies' do
-    # {"credentials: foo"} config is omitted, so AWS gem looks in ~/.aws/credentials
+=begin
   client = Aws::APIGateway::Client.new(region: AWS_REGION)
-  app_url = 'https://console.aws.amazon.com/cloud9/ide/066180cd4f524733bb998679cfa1e14a'
-  ws_url  = "wss://#{API_ID}.execute-api.#{AWS_REGION}.amazonaws.com"
-  conn = Faraday.new(url: ws_url) do |cfg|
-           cfg.request :aws_sigv4,
-                       service: 'apigateway',
-                       region:   AWS_REGION,
-                       access_key_id:     ENV['AWS_ACCESS_KEY_ID'],
-                       secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
-           cfg.response :json, :content_type => /\bjson\b/
-           cfg.response :raise_error
-           cfg.adapter Faraday.default_adapter
-         end
+  conn   = Faraday.new(url: ws_url) do |cfg|
+             cfg.request :aws_sigv4,
+                         service: 'apigateway',
+                         region:   AWS_REGION,
+                         access_key_id:     ENV['AWS_ACCESS_KEY_ID'],
+                         secret_access_key: ENV['AWS_SECRET_ACCESS_KEY']
+             cfg.response :json, :content_type => /\bjson\b/
+             cfg.response :raise_error
+             cfg.adapter Faraday.default_adapter
+           end
   resp = conn.get '/test' || 'No response, but no errors either'
   "resp --> #{resp.inspect}"
+#end
+=end
+
+get '/ok' do
+  'websocket_toy says OK, but without using an actual websocket'
 end
 
 
