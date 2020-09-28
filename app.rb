@@ -9,11 +9,13 @@ API_ID     = '9ucus3fwwj'
 ws_url     = "wss://#{API_ID}.execute-api.#{AWS_REGION}.amazonaws.com/test"
 #             wss://9ucus3fwwj.execute-api.us-east-1.amazonaws.com/test
 app_url    = 'https://console.aws.amazon.com/cloud9/ide/066180cd4f524733bb998679cfa1e14a'
+hit_count  = 0
 
 ENV['AWS_ACCESS_KEY_ID']     || (puts('No env var AWS_ACCESS_KEY_ID'); exit)
 ENV['AWS_SECRET_ACCESS_KEY'] || (puts('No env var AWS_SECRET_ACCESS_KEY'); exit)
 
-set :port, 8080
+set :bind, 0.0.0.0
+set :port, 8081
 set :sockets, []
 puts "\nServer listening on '/' for connection to:"
 puts app_url
@@ -24,11 +26,13 @@ puts '...'
 
 get '/' do
   if !request.websocket?
-    'ws_toy is replying to a non-websocket request to /'
+    hit_count += 1
+    "ws_toy is replying to a non-websocket request to '/', hit # #{hit_count}"
   else
     request.websocket do |ws|
       ws.onopen do
-        ws.send "ws_toy says Hi, because it recognized a websocket request"
+        hit_count += 1
+        ws.send "ws_toy says Hi, because it recognized a websocket request, hit # #{hit_count}"
         settings.socket << ws
       end
       ws.onmessage do |msg|
@@ -60,7 +64,8 @@ end
 =end
 
 get '/ok' do
-  'websocket_toy says OK, but without using an actual websocket'
+  hit_count += 1
+  'websocket_toy says OK to hit # #{hit_count}, but without using an actual websocket'
 end
 
 
