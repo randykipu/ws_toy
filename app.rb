@@ -27,11 +27,19 @@ puts '...'
 
 def log_randy
   ip = request.ip
-  return unless (ip == RANDYS_IP) || (ip == '127.0.0.1')
+  return unless request.websocket?
+  #return unless (ip == RANDYS_IP) || (ip == '127.0.0.1')
 
   puts "#{'---'*9}"
   ap request.env, options = {}
   puts "#{'---'*9}"
+end
+
+
+get '/' do
+  hit_count += 1
+  puts "ws_toy received '/', hit # #{hit_count}, from #{request.ip}"
+  log_randy
 end
 
 
