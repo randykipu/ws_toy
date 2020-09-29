@@ -34,8 +34,18 @@ def log_randy
   puts "#{'---'*9}"
 end
 
+
+get '/rjp' do
+  hit_count += 1
+  log_randy
+  ip = request.ip
+  "websocket_toy says OK to hit # #{hit_count} from #{ip}, but without using an actual websocket"
+end
+
+
 get '/speak' do
   hit_count += 1
+  puts "ws_toy received /speak, hit # #{hit_count}, from #{request.ip}"
   log_randy
   if !request.websocket?
     "ws_toy is replying to a non-websocket request to '/', hit # #{hit_count}"
@@ -56,6 +66,13 @@ get '/speak' do
   end
 end
 
+
+get '/default' do
+  hit_count += 1
+  puts "ws_toy received /default, hit # #{hit_count}, from #{request.ip}"
+  log_randy
+end
+
 =begin
   client = Aws::APIGateway::Client.new(region: AWS_REGION)
   conn   = Faraday.new(url: ws_url) do |cfg|
@@ -72,14 +89,6 @@ end
   "resp --> #{resp.inspect}"
 #end
 =end
-
-get '/rjp' do
-  hit_count += 1
-  log_randy
-  ip = request.ip
-  "websocket_toy says OK to hit # #{hit_count} from #{ip}, but without using an actual websocket"
-end
-
 
 =begin
 class AwsGateway
