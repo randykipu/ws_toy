@@ -27,8 +27,9 @@ puts '...'
 
 def log_randy
   ip = request.ip
-  return unless request.websocket?
+  #return unless request.websocket?
   #return unless (ip == RANDYS_IP) || (ip == '127.0.0.1')
+  return unless ip.include('3.216')  # all wscat requests from my laptop start 3.216
 
   puts "#{'---'*9}"
   ap request.env, options = {}
